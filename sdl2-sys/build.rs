@@ -150,7 +150,7 @@ fn compute_include_paths() -> Vec<String> {
     include_paths
 }
 
-fn link_sdl2(target_os: &str, profile: &str) {
+fn link_sdl2(target_os: &str) {
     #[cfg(all(feature = "use-pkgconfig", not(feature = "bundled")))] {
         // prints the appropriate linking parameters when using pkg-config
         // useless when using "bundled"
@@ -184,14 +184,9 @@ fn link_sdl2(target_os: &str, profile: &str) {
     }
 
     #[cfg(feature = "static-link")] {
-        if cfg!(feature = "bundled") || cfg!(feature = "use-pkgconfig") == false {
-            if profile.contains("release") {
-                println!("cargo:rustc-link-lib=static=SDL2main");
-                println!("cargo:rustc-link-lib=static=SDL2");
-            } else {
-                println!("cargo:rustc-link-lib=static=SDL2maind");
-                println!("cargo:rustc-link-lib=static=SDL2d");
-            }
+        if cfg!(feature = "bundled") || cfg!(feature = "use-pkgconfig") == false { 
+            println!("cargo:rustc-link-lib=static=SDL2maind");
+            println!("cargo:rustc-link-lib=static=SDL2d");
         }
 
         // Also linked to any required libraries for each supported platform
@@ -287,7 +282,6 @@ fn link_sdl2(target_os: &str, profile: &str) {
 fn main() {
     let target = env::var("TARGET").expect("Cargo build scripts always have TARGET");
     let host = env::var("HOST").expect("Cargo build scripts always have HOST");
-    let profile = env::var("PROFILE").expect("Cargo build scripts always have PROFILE");
     let target_os = get_os_from_triple(target.as_str()).unwrap();
 
     #[cfg(feature = "bundled")] {
@@ -314,7 +308,7 @@ fn main() {
         copy_pregenerated_bindings();
     }
 
-    link_sdl2(target_os, profile.as_str());
+    link_sdl2(target_os);
 }
 
 #[cfg(not(feature = "bindgen"))]
